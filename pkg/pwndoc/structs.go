@@ -204,6 +204,29 @@ type APIResponseLogin struct {
 	} `json:"datas"`
 }
 
+type APIFindingsDetailsOldReports struct {
+	Title               string  `json:"title,omitempty"`
+	Criticality         string  `json:"criticality,omitempty"`
+	Attack_Surface      string  `json:"attack_surface,omitempty"`
+	Type                string  `json:"type,omitempty"`
+	Description         string  `json:"description,omitempty"`
+	Mitre_Attack        string  `json:"mitre_attack,omitempty"`
+	Count               int     `json:"count,omitempty"`
+	CVSS_Score          float32 `json:"cvss_score,omitempty"`
+	CVSS_String         string  `json:"cvss_string,omitempty"`
+	Affected_Assets     string  `json:"affected_assets,omitempty"`
+	Evidence            string  `json:"evidence,omitempty"`
+	Detection           string  `json:"detection,omitempty"`
+	Summary             string  `json:"summary,omitempty"`
+	Recommendations     string  `json:"recommendations,omitempty"`
+	References          string  `json:"references,omitempty"`
+	Reviewed            bool    `json:"reviewed,omitempty"`
+	Resource_Identifier string  `json:"resource_identifier,omitempty"`
+	Created_Date        string  `json:"created_date,omitempty"`
+	Updated_Date        string  `json:"updated_date,omitempty"`
+	External_UUID       string  `json:"external_uuid,omitempty"`
+}
+
 type APIFindingDetails struct {
 	Identifier            int      `json:"identifier,omitempty"`
 	Title                 string   `json:"title,omitempty"`

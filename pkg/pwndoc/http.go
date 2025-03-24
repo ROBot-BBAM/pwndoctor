@@ -5,11 +5,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/fatih/color"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/fatih/color"
 )
 
 var URL string
