@@ -1,13 +1,17 @@
 package pwndoctor
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
+	"strconv"
+	"strings"
 
 	"github.com/strykethru/pwndoctor/pkg/pwndoc"
 )
@@ -137,6 +141,51 @@ func ExportAudit(audit pwndoc.APIAudit) error {
 		return err
 	}
 
+	////////////////////////////////////////////////////////
+	// THIS IS WHERE VULNERABILITIESDATA.CSV GETS CREATED //
+	////////////////////////////////////////////////////////
+	fileCSVPath := fmt.Sprintf("exports/%s/audit-findings/%s-vulnerabilitiesData.csv", audit.Name, audit.Name)
+	fileCSV, err := os.Create(fileCSVPath)
+	if err != nil {
+		return err
+	}
+	defer fileCSV.Close()
+
+	writer := csv.NewWriter(fileCSV)
+	defer writer.Flush()
+
+	// Write CSV header
+	writer.Write([]string{"Identifier", "Title", "Risk Rating", "VulnType", "Description", "Observation", "Remediation", "RemediationComplexity", "Priority", "CVSSv3", "Status", "Category"})
+
+	// Write data rows
+	for _, vuln := range retrievedAuditInformation.Data.Findings {
+		for _, field := range vuln.CustomFields {
+			if field.CustomField.Label == "risk_rating" {
+				vuln.Criticality = field.Text
+			} else {
+				vuln.Criticality = "Unknown"
+			}
+		}
+
+		row := []string{
+			strconv.Itoa(vuln.Identifier),
+			vuln.Title,
+			vuln.Criticality,
+			vuln.VulnType,
+			vuln.Description,
+			vuln.Observation,
+			vuln.Remediation,
+			strconv.Itoa(vuln.RemediationComplexity),
+			strconv.Itoa(vuln.Priority),
+			vuln.CVSSv3,
+			strconv.Itoa(vuln.Status),
+			vuln.Category,
+		}
+		writer.Write(row)
+	}
+
+	fmt.Println("CSV export complete: vulnerabilitiesData.csv")
+
 	for _, finding := range retrievedAuditInformation.Data.Findings {
 		file, err := json.MarshalIndent(finding, "", "  ")
 		if err != nil {
@@ -168,6 +217,68 @@ func ExportAudit(audit pwndoc.APIAudit) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func ExportCSVLocally(findingsDir string) error {
+
+	var vulnCounter = 0
+
+	//Creating CSV File
+	fileCSVPath := fmt.Sprintf("%s/vulnerabilitiesData.csv", findingsDir)
+	fileCSV, err := os.Create(fileCSVPath)
+	if err != nil {
+		return err
+	}
+	defer fileCSV.Close()
+
+	writer := csv.NewWriter(fileCSV)
+	defer writer.Flush()
+
+	// Write CSV header
+	writer.Write([]string{"Identifier", "Title", "Risk Rating", "VulnType", "Description", "Observation", "Remediation", "RemediationComplexity", "Priority", "CVSSv3", "Status", "Category"})
+
+	entries, err := os.ReadDir(findingsDir)
+	if err != nil {
+		fmt.Printf("Failed to read directory: %v\n", err)
+		return err
+	}
+
+	for _, entry := range entries {
+
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".json") || strings.HasPrefix(entry.Name(), "OG-") {
+			continue
+		}
+
+		filePath := filepath.Join(findingsDir, entry.Name())
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			continue
+		}
+
+		var vuln pwndoc.APIFindingsDetailsOldReports
+		if err := json.Unmarshal(content, &vuln); err != nil {
+			fmt.Printf("Failed to unmarshal JSON in %s: %v\n", filePath, err)
+			continue
+		}
+		vulnCounter++
+		row := []string{
+			strconv.Itoa(vulnCounter),
+			vuln.Title,
+			vuln.Criticality,
+			"N/A",
+			vuln.Summary,
+			vuln.Description,
+			vuln.Recommendations,
+			"N/A",
+			"N/A",
+			vuln.CVSS_String,
+			strconv.Itoa(vuln.Count),
+			vuln.Attack_Surface,
+		}
+		writer.Write(row)
 	}
 
 	return nil
