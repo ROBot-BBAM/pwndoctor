@@ -155,7 +155,7 @@ func ExportAudit(audit pwndoc.APIAudit) error {
 	defer writer.Flush()
 
 	// Write CSV header
-	writer.Write([]string{"Identifier", "Title", "Risk Rating", "VulnType", "Description", "Observation", "Remediation", "RemediationComplexity", "Priority", "CVSSv3", "Status", "Category"})
+	writer.Write([]string{"Identifier", "Title", "Risk Rating", "VulnType", "Description", "Observation", "Remediation", "RemediationComplexity", "Priority", "CVSSv3", "Status", "Category", "Affected Assets"})
 
 	// Write data rows
 	for _, vuln := range retrievedAuditInformation.Data.Findings {
@@ -180,6 +180,7 @@ func ExportAudit(audit pwndoc.APIAudit) error {
 			vuln.CVSSv3,
 			strconv.Itoa(vuln.Status),
 			vuln.Category,
+			vuln.Scope,
 		}
 		writer.Write(row)
 	}
@@ -238,7 +239,7 @@ func ExportCSVLocally(findingsDir string) error {
 	defer writer.Flush()
 
 	// Write CSV header
-	writer.Write([]string{"Identifier", "Title", "Risk Rating", "VulnType", "Description", "Observation", "Remediation", "RemediationComplexity", "Priority", "CVSSv3", "Status", "Category"})
+	writer.Write([]string{"Identifier", "Title", "Risk Rating", "VulnType", "Description", "Observation", "Remediation", "RemediationComplexity", "Priority", "CVSSv3", "Status", "Category", "Affected Assets"})
 
 	entries, err := os.ReadDir(findingsDir)
 	if err != nil {
@@ -277,6 +278,7 @@ func ExportCSVLocally(findingsDir string) error {
 			vuln.CVSS_String,
 			strconv.Itoa(vuln.Count),
 			vuln.Attack_Surface,
+			vuln.Affected_Assets,
 		}
 		writer.Write(row)
 	}
