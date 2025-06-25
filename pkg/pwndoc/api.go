@@ -142,6 +142,13 @@ func (api *API) GetAudit(auditID string) (*APIResponseAudit, error) {
 	return &retrievedAuditInformation, err
 }
 
+func (api *API) InsertFinding(auditID string, byteData *bytes.Reader) ([]byte, error) {
+	insertPath := path.Join(PathAudits, auditID, "findings")
+	postResponse, err := api.PostResponseBody(insertPath, byteData)
+	//fmt.Println("[+] POST Response is %s", string(postResponse))
+	return postResponse, err
+}
+
 func (api *API) CreateReportTemplate(docName, docExt string, templateFile *os.File) (bool, error) {
 
 	// Read entire docx into byte slice

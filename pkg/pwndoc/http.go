@@ -78,8 +78,8 @@ func MakePostRequest(url string, bodyReader *bytes.Reader, token string, client 
 		return nil, err
 	}
 
-	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Cookie", token)
 
 	resp, err := client.Do(req)
